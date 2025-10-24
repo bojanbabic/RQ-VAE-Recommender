@@ -95,7 +95,7 @@ class RawNewsAPI(NewsAPI, PreprocessingMixin):
 
         # Process article data:
         df = pd.read_csv(self.raw_paths[1])# , index_col='article_id')
-        df = df.head(1000)
+        df = df.head(10000)
         print(click_events_df.shape)
         click_events_df = click_events_df.join(df, on='article_id', how='inner', rsuffix='_df')
         click_events_df = click_events_df.drop(columns=['article_id_df', 'title', 'category', 'total_articles'])

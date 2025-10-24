@@ -101,7 +101,7 @@ def train(
     )
 
     if wandb_logging and accelerator.is_main_process:
-        wandb.login(key="5799cd3f46a6ac9ccf4695d62ffdd0b319fe25af")
+        wandb.login(key="e88a2b7e6b8ba98d6fd3091667bd92470bf23b29")
         run = wandb.init(
             project="rq-vae-training",
             config=params
@@ -135,7 +135,6 @@ def train(
               disable=not accelerator.is_main_process) as pbar:
         losses = [[], [], []]
         for iter in range(start_iter, start_iter+1+iterations):
-            print(f"iter: {iter}")
             model.train()
             total_loss = 0
             t = 0.2

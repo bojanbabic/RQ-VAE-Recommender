@@ -78,7 +78,7 @@ def train(
     device = accelerator.device
 
     if wandb_logging and accelerator.is_main_process:
-        wandb.login(key="5799cd3f46a6ac9ccf4695d62ffdd0b319fe25af")
+        wandb.login(key="e88a2b7e6b8ba98d6fd3091667bd92470bf23b29")
         run = wandb.init(
             project="gen-retrieval-decoder-training",
             config=params
