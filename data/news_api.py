@@ -162,7 +162,7 @@ class RawNewsAPI(NewsAPI, PreprocessingMixin):
 
         gen = torch.Generator()
         gen.manual_seed(42)
-        data['item'].is_train = torch.rand(titles_emb.shape[0], generator=gen) > 0.20
+        data['item'].is_train = torch.rand(titles_emb.shape[0], generator=gen) > 0.05
         filter = data['item'].is_train
         not_filter = ~data['item'].is_train
         print(f"is_train length: {len(data['item']['x'][filter])}")
