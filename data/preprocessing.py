@@ -26,6 +26,22 @@ class PreprocessingMixin:
         return out
 
     @staticmethod
+    def _process_category(category, one_hot=True):
+        if one_hot:
+            return category
+
+        max_category = category.sum(axis=1).max()
+        idx_list = []
+        for i in range(category.shape[0]):
+            idxs = np.where(category[i, :] == 1)[0] + 1
+            missing = max_category - len(idxs)
+            if missing > 0:
+                idxs = np.array(list(idxs) + missing * [0])
+            idx_list.append(idxs)
+        out = np.stack(idx_list)
+        return out
+
+    @staticmethod
     def _remove_low_occurrence(source_df, target_df, index_col):
         if isinstance(index_col, str):
             index_col = [index_col]
@@ -87,29 +103,37 @@ class PreprocessingMixin:
             ) for feat in features
         }
         out.update(fut_out)
-        out["userId"] = torch.from_numpy(df.select("userId").to_numpy())
+        out["user_id"] = torch.from_numpy(df.select("user_id").to_numpy())
         return out
 
 
     @staticmethod
     def _generate_user_history(
-        ratings_df,
-        features: List[str] = ["movieId", "rating"],
+        click_events_df,
+        features: List[str] = ["itemId", "is_click"],
         window_size: int = 200,
         stride: int = 1,
         train_split: float = 0.8,
     ) -> torch.Tensor:
         
-        if isinstance(ratings_df, pd.DataFrame):
-            ratings_df = pl.from_pandas(ratings_df)
+        print(f"generate_user_history -> click_events_df length: {len(click_events_df)}")
+        click_events_df = click_events_df[[
+            'is_click',
+            'timestamp',
+            'article_id',
+            'user_id',
+            'itemId'
+        ]]
+        if isinstance(click_events_df, pd.DataFrame):
+            click_events_df = pl.from_pandas(click_events_df)
 
-        grouped_by_user = (ratings_df
-            .sort("userId", "timestamp")
+        grouped_by_user = (click_events_df
+            .sort("user_id", "timestamp")
             .group_by_dynamic(
                 index_column=pl.int_range(pl.len()),
                 every=f"{stride}i",
                 period=f"{window_size}i",
-                by="userId")
+                by="user_id")
             .agg(
                 *(pl.col(feat) for feat in features),
                 seq_len=pl.col(features[0]).len(),
@@ -123,7 +147,7 @@ class PreprocessingMixin:
             .with_columns(pad_len=max_seq_len-pl.col("seq_len"))
             .filter(pl.col("is_train").or_(pl.col("seq_len") > 1))
             .select(
-                pl.col("userId"),
+                pl.col("user_id"),
                 pl.col("max_timestamp"),
                 pl.col("is_train"),
                 *(pl.when(pl.col("is_train"))
@@ -149,6 +173,11 @@ class PreprocessingMixin:
                 )
             )
         )
+        padded_history = padded_history.with_columns(pl.col("itemId").arr.to_list().alias("itemId"))
+        padded_history = padded_history.with_columns(pl.col("is_click").arr.to_list().alias("is_click"))
+        print(f"padded_history length: {padded_history.columns}")
+        print(padded_history.head())
+
         
         out = {}
         out["train"] = PreprocessingMixin._df_to_tensor_dict(

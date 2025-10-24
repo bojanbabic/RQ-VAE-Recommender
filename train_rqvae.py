@@ -74,8 +74,10 @@ def train(
         eval_dataloader = DataLoader(eval_dataset, sampler=eval_sampler, batch_size=None, collate_fn=lambda batch: batch)
 
     index_dataset = ItemData(root=dataset_folder, dataset=dataset, force_process=False, train_test_split="all", split=dataset_split) if do_eval else train_dataset
+    print(f"index_dataset length: {len(index_dataset)}")
     
     train_dataloader = accelerator.prepare(train_dataloader)
+    print(train_dataloader)
     # TODO: Investigate bug with prepare eval_dataloader
 
     model = RqVae(
@@ -99,7 +101,7 @@ def train(
     )
 
     if wandb_logging and accelerator.is_main_process:
-        wandb.login()
+        wandb.login(key="5799cd3f46a6ac9ccf4695d62ffdd0b319fe25af")
         run = wandb.init(
             project="rq-vae-training",
             config=params
@@ -133,6 +135,7 @@ def train(
               disable=not accelerator.is_main_process) as pbar:
         losses = [[], [], []]
         for iter in range(start_iter, start_iter+1+iterations):
+            print(f"iter: {iter}")
             model.train()
             total_loss = 0
             t = 0.2
