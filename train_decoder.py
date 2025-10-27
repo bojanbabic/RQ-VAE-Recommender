@@ -38,7 +38,7 @@ def train(
     pretrained_decoder_path=None,
     split_batches=True,
     amp=False,
-    wandb_logging=False,
+    wandb_logging=True,
     force_dataset_process=False,
     mixed_precision_type="fp16",
     gradient_accumulate_every=1,
@@ -64,8 +64,8 @@ def train(
     model_jagged_mode=True,
     vae_hf_model_name="edobotta/rqvae-amazon-beauty"
 ):  
-    if dataset != RecDataset.AMAZON:
-        raise Exception(f"Dataset currently not supported: {dataset}.")
+    # if dataset != RecDataset.AMAZON:
+        # raise Exception(f"Dataset currently not supported: {dataset}.")
 
     if wandb_logging:
         params = locals()

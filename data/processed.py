@@ -105,12 +105,13 @@ class SeqData(Dataset):
         raw_data = raw_dataset_class(root=root, *args, **kwargs)
 
         processed_data_path = raw_data.processed_paths[0]
+        print(f"processed_data_path: {processed_data_path}")
         if not os.path.exists(processed_data_path) or force_process:
             raw_data.process(max_seq_len=max_seq_len)
 
-        split = "train" if is_train else "test"
+        split = "train" if is_train else "eval"
         self.subsample = subsample
-        self.sequence_data = raw_data.data[("user", "rated", "item")]["history"][split]
+        self.sequence_data = raw_data.data[("user", "clicked", "item")]["history"][split]
 
         if not self.subsample:
             self.sequence_data["itemId"] = torch.nn.utils.rnn.pad_sequence(
@@ -129,13 +130,13 @@ class SeqData(Dataset):
         return self._max_seq_len
 
     def __len__(self):
-        return self.sequence_data["userId"].shape[0]
+        return self.sequence_data["user_id"].shape[0]
   
     def __getitem__(self, idx):
-        user_ids = self.sequence_data["userId"][idx]
+        user_ids = self.sequence_data["user_id"][idx]
         
         if self.subsample:
-            seq = self.sequence_data["itemId"][idx] + self.sequence_data["itemId_fut"][idx].tolist()
+            seq = self.sequence_data["itemId"][idx].tolist() + self.sequence_data["itemId_fut"][idx].tolist()
             start_idx = random.randint(0, max(0, len(seq)-3))
             end_idx = random.randint(start_idx+3, start_idx+self.max_seq_len+1)
             sample = seq[start_idx:end_idx]

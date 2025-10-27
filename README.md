@@ -46,3 +46,37 @@ To train both models on the **MovieLens 32M** dataset, run the following command
 * [vector-quantize-pytorch](https://github.com/lucidrains/vector-quantize-pytorch) by lucidrains
 * [deep-vector-quantization](https://github.com/karpathy/deep-vector-quantization) by karpathy
   
+
+
+# Notes
+
+POD_NAME="vllm-deepseek-qwen-deployment-vllm-5c9fcf64c5-jml2c"
+kubectl cp ~/work/RQ-VAE-Recommender/dataset/news-api/raw/users.csv $POD_NAME:/tmp/
+kubectl cp ~/work/RQ-VAE-Recommender/dataset/news-api/raw/articles.csv $POD_NAME:/tmp/ 
+kubectl cp ~/work/RQ-VAE-Recommender/dataset/news-api/raw/click_events.csv $POD_NAME:/tmp/  
+
+kubectl exec -it $POD_NAME -- /bin/bash
+
+git clone https://github.com/bojanbabic/RQ-VAE-Recommender.git
+cd RQ-VAE-Recommender/
+git checkout news_api_poc
+mkdir -p dataset/news-api/raw/
+mv /tmp/users.csv dataset/news-api/raw/
+mv /tmp/articles.csv dataset/news-api/raw/
+mv /tmp/click_events.csv dataset/news-api/raw/
+
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+export PATH=$HOME/.local/bin:$PATH
+source $HOME/.local/bin/env 
+
+uv run pip install gin-config wandb pandas polars sentence_transformers torch torch_geometric
+
+uv run python train_rqvae.py configs/news_api.gin
+
+
+kubectl cp $POD_NAME:/vllm-workspace/RQ-VAE-Recommender/out/rqvae/news_api/checkpoint_9999.pt out/rqvae/news_api/checkpoint_9999.pt 
+kubectl cp $POD_NAME:/vllm-workspace/RQ-VAE-Recommender/out/rqvae/news_api/checkpoint_19999.pt out/rqvae/news_api/checkpoint_19999.pt 
+kubectl cp $POD_NAME:/vllm-workspace/RQ-VAE-Recommender/out/rqvae/news_api/checkpoint_29999.pt out/rqvae/news_api/checkpoint_29999.pt 
+kubectl cp $POD_NAME:/vllm-workspace/RQ-VAE-Recommender/out/rqvae/news_api/checkpoint_39999.pt out/rqvae/news_api/checkpoint_39999.pt 
+kubectl cp $POD_NAME:/vllm-workspace/RQ-VAE-Recommender/out/rqvae/news_api/checkpoint_49999.pt out/rqvae/news_api/checkpoint_49999.pt 
