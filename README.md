@@ -50,7 +50,7 @@ To train both models on the **MovieLens 32M** dataset, run the following command
 
 # Notes
 
-POD_NAME="vllm-deepseek-qwen-deployment-vllm-5c9fcf64c5-jml2c"
+POD_NAME="vllm-deepseek-qwen-deployment-vllm-d975ccb54-tn2c4"
 kubectl cp ~/work/RQ-VAE-Recommender/dataset/news-api/raw/users.csv $POD_NAME:/tmp/
 kubectl cp ~/work/RQ-VAE-Recommender/dataset/news-api/raw/articles.csv $POD_NAME:/tmp/ 
 kubectl cp ~/work/RQ-VAE-Recommender/dataset/news-api/raw/click_events.csv $POD_NAME:/tmp/  

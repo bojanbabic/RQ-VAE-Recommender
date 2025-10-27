@@ -91,6 +91,7 @@ class RawNewsAPI(NewsAPI, PreprocessingMixin):
         print(self.raw_paths)
         data = HeteroData()
         click_events_df = self._load_feedback_data()
+        click_events_df["is_click"] = click_events_df["is_click"].apply(lambda x: 1 if str(x) == 'True' else 0)
         print(click_events_df.columns)
 
         # Process article data:
